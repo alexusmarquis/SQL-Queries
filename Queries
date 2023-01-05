@@ -1,0 +1,176 @@
+1---WHAT CATEGORY OF PIZZA IS MOST POPULAR? LEAST POPULAR?---
+
+select distinct pt.category, count(od.order_id) as order_amt 
+from order_details od 
+join pizzas on pizzas.pizza_id = od.pizza_id
+join pizza_types pt on pt.pizza_type_id = pizzas.pizza_type_id 
+group by pt.category
+order by order_amt desc;
+
+---THIS BRINGS BACK TOTALS FOR EACH CATEGORY.
+CLASSIC IS MOST POPULAR, CHICKEN IS LEAST POPULAR---
+
+
+2--WHAT PIZZA TYPE IS MOST POPULAR? LEAST POPULAR?
+
+select distinct pt.name, count(od.order_id) as order_amt
+from order_details od
+join pizzas on pizzas.pizza_id = od.pizza_id
+join pizza_types pt on pt.pizza_type_id = pizzas.pizza_type_id
+group by pt.name
+order by order_amt desc limit 1;
+
+---TO SHOW LEAST POPULAR, I TAKE OUT DESC FROM THE QUERY. 
+THE CLASSIC DELUXE PIZZA IS MOST POPULAR, AND THE BRIE BARRE PIZZA IS LEAST POPULAR---
+
+
+3---WHAT INGREDIENTS FOR THE MOST POPULAR PIZZA TYPE AND CHECK CONNECTING INGREDIENTS TO 
+OTHER PIZZA TYPES.---
+
+select ingredients from pizza_types
+where pizza_type_id = 'classic_dlx';
+select name, ingredients from pizza_types
+where ingredients like '%Pepperoni%'
+or ingredients like '%Red Onions%'
+or ingredients like '%Red Peppers%'
+or ingredients like '%Bacon%';
+
+--FIRST, I CHECKED INGREDIENTS FROM THE CLASSIC DELUXE, THEN CHECKED CONNECTING INGREDIENTS
+WHICH SHOWED A CORRELATION WITH 21 TYPES. THIS SHOWS THAT THESE INGREDIENTS MIGHT NEED TO BE ORDERED 
+MORE FREQUENTLY THAN OTHERS.
+
+
+4---SHOW INGREDIENTS FOR LEAST POPULAR AND CHECK CONNECTING INGREDIENTS TO OTHER PIZZA TYPES. 
+THIS IS TO SHOW WHAT INGREDIENTS OR PIZZA TYPE TO GET RID OF.---
+
+select ingredients from pizza_types 
+where name = 'The Brie Carre Pizza';
+select name, ingredients from pizza_types
+where ingredients like '%Brio Carre Cheese%'
+or ingredients like '%Prosciutto%'
+or ingredients like '%Carmelized Onions%'
+or ingredients like '%Pears%'
+or ingredients like '%Thyme%';
+
+---THIS SHOWS THAT THERE IS NO CORRELATION OF INGREDIENTS BETWEEN THE BRIE CARRE PIZZA AND ANY
+OTHER PIZZA TYPES BESIDES GARLIC(GARLIC IS IN MOST PIZZAS). WE NEED TO DECIDE IF WE WANT TO KEEP THE
+BRIE CARRE, IT IS ONLY MADE IN A SMALL SIZE AND THE PRICE IS $23.65---
+
+
+5---SALES DURING WEEKENDS(fri-sun)---
+
+select orders.date, round(sum(pizzas.price),2) as sales from pizzas
+join order_details od on od.pizza_id = pizzas.pizza_id
+join orders on orders.order_id = od.order_id
+where dayofweek(orders.date) = 6 
+or dayofweek(orders.date) = 7
+or dayofweek(orders.date) = 1
+group by orders.date
+order by orders.date, sales;
+
+---THIS SHOWS EACH WEEKEND DATE CORRESPONDING TO THE TOTAL SALES FOR THAT DATE.---
+
+
+6---TOTAL WEEKEND SALES---
+
+select round(sum(pizzas.price),2) as sales from pizzas
+join order_details od on od.pizza_id = pizzas.pizza_id
+join orders on orders.order_id = od.order_id
+where dayofweek(orders.date) = 6 
+or dayofweek(orders.date) = 7
+or dayofweek(orders.date) = 1;
+
+---THIS SHOWS THE TOTAL SALES FOR ALL OF THE WEEKEND DATES.---
+
+
+7---SALES DURING HOLIDAYS. NEW YEARS DAY, MEMORIAL DAY, LABOR DAY, 4TH OF JULY. NEW YEARS EVE 
+HAS NO ORDER DATA IN SET---
+
+select orders.date, round(sum(pizzas.price),2) as sales from pizzas
+join order_details od on od.pizza_id = pizzas.pizza_id
+join orders on orders.order_id = od.order_id
+where date = '2015-01-01'
+or date = '2015-05-25'
+or date = '2015-07-04'
+or date = '2015-09-07'
+group by orders.date 
+order by orders.date, sales;
+
+8---TOTAL SALES FOR 2015, ALONG WITH # OF ORDERS---
+
+select count(od.order_id) as amt_of_orders, 
+round(sum(price), 2) as total_sales_2015 from pizzas
+join order_details od on od.pizza_id = pizzas.pizza_id
+join orders on orders.order_id = od.order_id
+where orders.date between '2015-01-01' and '2015-12-31';
+
+---# OF ORDERS = 48345, TOTAL SALES FOR YEAR = 797430.4---
+
+
+9--SALES PER MONTH---
+
+select month(date) as month, 
+round(sum(pizzas.price),2) as salespermonth
+from orders
+join order_details od on od.order_id = orders.order_id
+join pizzas on pizzas.pizza_id = od.pizza_id
+group by month(date)
+order by month,salespermonth;
+
+ 
+ 10---MAX, MIN SALES---
+ 
+ select month(date) as month, 
+round(sum(pizzas.price),2) as salespermonth
+from orders
+join order_details od on od.order_id = orders.order_id
+join pizzas on pizzas.pizza_id = od.pizza_id
+group by month(date)
+order by salespermonth limit 1;
+
+---TO SHOW MAX ADD IS DESC NECT TO SALESPERMONTH---
+
+
+11---WHAT SIZE PIZZA IS MOST POPULAR? LEAST?---
+
+select count(od.order_id) as amtorders, pizzas.size
+from order_details od
+join pizzas on od.pizza_id = pizzas.pizza_id
+where pizzas.size = 'S'
+or pizzas.size = 'M'
+or pizzas.size = 'L'
+or pizzas.size = 'XL'
+or pizzas.size = 'XXL'
+group by pizzas.size;
+
+---THIS SHOWS THE AMOUNT OF ORDERS BY SIZE. LARGE IS MOST POPULAR, XXL LEAST POPULAR---
+
+
+12---WHAT TIME OF DAY IS PIZZA MOST ORDERED? I SEPERATED THE TIME OF DAY BY POSSIBLE SHIFT TIMES
+THIS WILL HELP US DETERMINE HOW MANY EMPLOYEES TO SCHEDULE DURING EACH 5 HOUR INCREMENT.---
+
+select '9am-1:59pm' as timeframe,count(*) as orderamt
+from orders
+where orders.time between '09:00:00' and '13:59:59' 
+union
+select '2pm-6:59pm' as timeframe,count(*) as orderamt
+from orders
+where orders.time between '14:00:00' and '18:59:59'
+union
+select '7pm-11:59pm' as timeframe,count(*) as orderamt
+from orders
+where orders.time between '19:00:00' and '23:59:59';
+
+---THIS SHOWS THAT THE SHIFT FROM 2PM-6:59PM HAS THE MOST ORDERS. THIS IS WHEN MORE EMPLOYEES
+SHOULD BE SCHEDULED---
+
+
+13---SHOW DATE WITH MOST AMOUNT OF ORDERS, SHOW SALES ALONG WITH IT---
+
+select count(distinct orders.order_id) as amt_orders, date, 
+round(sum(pizzas.price),2) as sales
+ from orders
+join order_details od on od.order_id = orders.order_id
+join pizzas on od.pizza_id = pizzas.pizza_id
+group by date
+order by amt_orders desc;
