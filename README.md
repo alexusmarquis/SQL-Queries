@@ -1,2 +1,2 @@
 # SQL-Queries
-I created questions based on a pizza store sample database from maven analytics and used SQL queries to answer my questions.
+I created questions based on a pizza store sample database from maven analytics and used SQL queries to answer my questions. The span of dates in the dataset is January 1st 2015 -  December 31st 2015. My questions include most and least popular pizza category, the pizza type that is most and least popular, date with most amount of orders, the time of day that pizza is ordered most, the most popular size purchased, month with max and min sales, sales per month, total sales and orders, sales during holidays and weekends, correlation of ingredients from the least and most popular pizzas and other pizza types.
