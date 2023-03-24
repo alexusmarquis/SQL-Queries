@@ -1,11 +1,13 @@
 1---WHAT CATEGORY OF PIZZA IS MOST POPULAR? LEAST POPULAR?---
 
-select distinct pt.category, count(od.order_id) as order_amt 
-from order_details od 
-join pizzas on pizzas.pizza_id = od.pizza_id
-join pizza_types pt on pt.pizza_type_id = pizzas.pizza_type_id 
-group by pt.category
-order by order_amt desc;
+SELECT DISTINCT pt.category, COUNT(od.order_id) AS order_amt 
+ FROM order_details od 
+  JOIN pizzas 
+   ON pizzas.pizza_id = od.pizza_id
+    JOIN pizza_types pt 
+   ON pt.pizza_type_id = pizzas.pizza_type_id 
+  GROUP BY pt.category
+ORDER BY order_amt DESC;
 
 ---THIS BRINGS BACK TOTALS FOR EACH CATEGORY.
 CLASSIC IS MOST POPULAR, CHICKEN IS LEAST POPULAR---
@@ -13,12 +15,14 @@ CLASSIC IS MOST POPULAR, CHICKEN IS LEAST POPULAR---
 
 2--WHAT PIZZA TYPE IS MOST POPULAR? LEAST POPULAR?
 
-select distinct pt.name, count(od.order_id) as order_amt
-from order_details od
-join pizzas on pizzas.pizza_id = od.pizza_id
-join pizza_types pt on pt.pizza_type_id = pizzas.pizza_type_id
-group by pt.name
-order by order_amt desc limit 1;
+SELECT DISTINCT pt.name, COUNT(od.order_id) AS order_amt
+ FROM order_details od
+  JOIN pizzas 
+   ON pizzas.pizza_id = od.pizza_id
+    JOIN pizza_types pt 
+   ON pt.pizza_type_id = pizzas.pizza_type_id
+  GROUP BY pt.name
+ORDER BY order_amt DESC LIMIT 1;
 
 ---TO SHOW LEAST POPULAR, I TAKE OUT DESC FROM THE QUERY. 
 THE CLASSIC DELUXE PIZZA IS MOST POPULAR, AND THE BRIE BARRE PIZZA IS LEAST POPULAR---
@@ -27,13 +31,16 @@ THE CLASSIC DELUXE PIZZA IS MOST POPULAR, AND THE BRIE BARRE PIZZA IS LEAST POPU
 3---WHAT INGREDIENTS FOR THE MOST POPULAR PIZZA TYPE AND CHECK CONNECTING INGREDIENTS TO 
 OTHER PIZZA TYPES.---
 
-select ingredients from pizza_types
-where pizza_type_id = 'classic_dlx';
-select name, ingredients from pizza_types
-where ingredients like '%Pepperoni%'
-or ingredients like '%Red Onions%'
-or ingredients like '%Red Peppers%'
-or ingredients like '%Bacon%';
+SELECT ingredients 
+  FROM pizza_types
+    WHERE pizza_type_id = 'classic_dlx';
+    
+SELECT name, ingredients 
+  FROM pizza_types
+   WHERE ingredients LIKE '%Pepperoni%'
+    OR ingredients LIKE '%Red Onions%'
+     OR ingredients LIKE '%Red Peppers%'
+      OR ingredients LIKE '%Bacon%';
 
 --FIRST, I CHECKED INGREDIENTS FROM THE CLASSIC DELUXE, THEN CHECKED CONNECTING INGREDIENTS
 WHICH SHOWED A CORRELATION WITH 21 TYPES. THIS SHOWS THAT THESE INGREDIENTS MIGHT NEED TO BE ORDERED 
@@ -43,14 +50,17 @@ MORE FREQUENTLY THAN OTHERS.
 4---SHOW INGREDIENTS FOR LEAST POPULAR AND CHECK CONNECTING INGREDIENTS TO OTHER PIZZA TYPES. 
 THIS IS TO SHOW WHAT INGREDIENTS OR PIZZA TYPE TO GET RID OF.---
 
-select ingredients from pizza_types 
-where name = 'The Brie Carre Pizza';
-select name, ingredients from pizza_types
-where ingredients like '%Brio Carre Cheese%'
-or ingredients like '%Prosciutto%'
-or ingredients like '%Carmelized Onions%'
-or ingredients like '%Pears%'
-or ingredients like '%Thyme%';
+SELECT ingredients 
+ FROM pizza_types 
+  WHERE name = 'The Brie Carre Pizza';
+
+SELECT name, ingredients 
+ FROM pizza_types
+  WHERE ingredients LIKE '%Brio Carre Cheese%'
+    OR ingredients LIKE '%Prosciutto%'
+   OR ingredients LIKE '%Carmelized Onions%'
+ OR ingredients LIKE '%Pears%'
+OR ingredients LIKE '%Thyme%';
 
 ---THIS SHOWS THAT THERE IS NO CORRELATION OF INGREDIENTS BETWEEN THE BRIE CARRE PIZZA AND ANY
 OTHER PIZZA TYPES BESIDES GARLIC(GARLIC IS IN MOST PIZZAS). WE NEED TO DECIDE IF WE WANT TO KEEP THE
@@ -59,89 +69,92 @@ BRIE CARRE, IT IS ONLY MADE IN A SMALL SIZE AND THE PRICE IS $23.65---
 
 5---SALES DURING WEEKENDS(fri-sun)---
 
-select orders.date, round(sum(pizzas.price),2) as sales from pizzas
-join order_details od on od.pizza_id = pizzas.pizza_id
-join orders on orders.order_id = od.order_id
-where dayofweek(orders.date) = 6 
-or dayofweek(orders.date) = 7
-or dayofweek(orders.date) = 1
-group by orders.date
-order by orders.date, sales;
+SELECT orders.date, ROUND(SUM(pizzas.price),2) AS sales 
+ FROM pizzas
+  JOIN order_details od ON od.pizza_id = pizzas.pizza_id
+   JOIN orders ON orders.order_id = od.order_id
+    WHERE dayofweek(orders.date) = 6 
+   OR dayofweek(orders.date) = 7
+  OR dayofweek(orders.date) = 1
+ GROUP BY orders.date
+ORDER BY orders.date, sales;
 
 ---THIS SHOWS EACH WEEKEND DATE CORRESPONDING TO THE TOTAL SALES FOR THAT DATE.---
 
 
 6---TOTAL WEEKEND SALES---
 
-select round(sum(pizzas.price),2) as sales from pizzas
-join order_details od on od.pizza_id = pizzas.pizza_id
-join orders on orders.order_id = od.order_id
-where dayofweek(orders.date) = 6 
-or dayofweek(orders.date) = 7
-or dayofweek(orders.date) = 1;
+SELECT ROUND(SUM(pizzas.price),2) AS sales 
+ FROM pizzas
+  JOIN order_details od ON od.pizza_id = pizzas.pizza_id
+   JOIN orders ON orders.order_id = od.order_id
+  WHERE dayofweek(orders.date) = 6 
+ OR dayofweek(orders.date) = 7
+OR dayofweek(orders.date) = 1;
 
----THIS SHOWS THE TOTAL SALES FOR ALL OF THE WEEKEND DATES.---
+---THIS SHOWS THE TOTAL SALES FOR ALL OF THE WEEKEND DATES THOUGHOUT THE YEAR.---
 
 
 7---SALES DURING HOLIDAYS. NEW YEARS DAY, MEMORIAL DAY, LABOR DAY, 4TH OF JULY. NEW YEARS EVE 
 HAS NO ORDER DATA IN SET---
 
-select orders.date, round(sum(pizzas.price),2) as sales from pizzas
-join order_details od on od.pizza_id = pizzas.pizza_id
-join orders on orders.order_id = od.order_id
-where date = '2015-01-01'
-or date = '2015-05-25'
-or date = '2015-07-04'
-or date = '2015-09-07'
-group by orders.date 
-order by orders.date, sales;
+SELECT orders.date, ROUND(SUM(pizzas.price),2) AS sales from pizzas
+ JOIN order_details od ON od.pizza_id = pizzas.pizza_id
+  JOIN orders ON orders.order_id = od.order_id
+   WHERE date = '2015-01-01'
+    OR date = '2015-05-25'
+   OR date = '2015-07-04'
+  OR date = '2015-09-07'
+ GROUP BY orders.date 
+ORDER BY orders.date, sales;
 
 8---TOTAL SALES FOR 2015, ALONG WITH # OF ORDERS---
 
-select count(od.order_id) as amt_of_orders, 
-round(sum(price), 2) as total_sales_2015 from pizzas
-join order_details od on od.pizza_id = pizzas.pizza_id
-join orders on orders.order_id = od.order_id
-where orders.date between '2015-01-01' and '2015-12-31';
+SELECT COUNT(od.order_id) AS amt_of_orders, 
+ ROUND(SUM(price), 2) AS total_sales_2015 
+  FROM pizzas
+   JOIN order_details od ON od.pizza_id = pizzas.pizza_id
+ JOIN orders ON orders.order_id = od.order_id
+WHERE orders.date BETWEEN '2015-01-01' AND '2015-12-31';
 
 ---# OF ORDERS = 48345, TOTAL SALES FOR YEAR = 797430.4---
 
 
 9--SALES PER MONTH---
 
-select month(date) as month, 
-round(sum(pizzas.price),2) as salespermonth
-from orders
-join order_details od on od.order_id = orders.order_id
-join pizzas on pizzas.pizza_id = od.pizza_id
-group by month(date)
-order by month,salespermonth;
+SELECT month(date) AS month, 
+ ROUND(SUM(pizzas.price),2) AS salespermonth
+  FROM orders
+   JOIN order_details od ON od.order_id = orders.order_id
+  JOIN pizzas ON pizzas.pizza_id = od.pizza_id
+ GROUP BY month(date)
+ORDER BY month,salespermonth;
 
  
  10---MAX, MIN SALES---
  
- select month(date) as month, 
-round(sum(pizzas.price),2) as salespermonth
-from orders
-join order_details od on od.order_id = orders.order_id
-join pizzas on pizzas.pizza_id = od.pizza_id
-group by month(date)
-order by salespermonth limit 1;
+SELECT month(date) AS month, 
+ ROUND(SUM(pizzas.price),2) AS salespermonth
+  FROM orders
+   JOIN order_details od ON od.order_id = orders.order_id
+  JOIN pizzas ON pizzas.pizza_id = od.pizza_id
+ GROUP BY month
+ORDER BY salespermonth LIMIT 1;
 
 ---TO SHOW MAX ADD IS DESC NECT TO SALESPERMONTH---
 
 
 11---WHAT SIZE PIZZA IS MOST POPULAR? LEAST?---
 
-select count(od.order_id) as amtorders, pizzas.size
-from order_details od
-join pizzas on od.pizza_id = pizzas.pizza_id
-where pizzas.size = 'S'
-or pizzas.size = 'M'
-or pizzas.size = 'L'
-or pizzas.size = 'XL'
-or pizzas.size = 'XXL'
-group by pizzas.size;
+SELECT COUNT(od.order_id) AS amtorders, pizzas.size
+ FROM order_details od
+  JOIN pizzas ON od.pizza_id = pizzas.pizza_id
+   WHERE pizzas.size = 'S'
+    OR pizzas.size = 'M'
+   OR pizzas.size = 'L'
+  OR pizzas.size = 'XL'
+ OR pizzas.size = 'XXL'
+GROUP BY pizzas.size;
 
 ---THIS SHOWS THE AMOUNT OF ORDERS BY SIZE. LARGE IS MOST POPULAR, XXL LEAST POPULAR---
 
@@ -149,17 +162,17 @@ group by pizzas.size;
 12---WHAT TIME OF DAY IS PIZZA MOST ORDERED? I SEPERATED THE TIME OF DAY BY POSSIBLE SHIFT TIMES
 THIS WILL HELP US DETERMINE HOW MANY EMPLOYEES TO SCHEDULE DURING EACH 5 HOUR INCREMENT.---
 
-select '9am-1:59pm' as timeframe,count(*) as orderamt
-from orders
-where orders.time between '09:00:00' and '13:59:59' 
-union
-select '2pm-6:59pm' as timeframe,count(*) as orderamt
-from orders
-where orders.time between '14:00:00' and '18:59:59'
-union
-select '7pm-11:59pm' as timeframe,count(*) as orderamt
-from orders
-where orders.time between '19:00:00' and '23:59:59';
+SELECT '9am-1:59pm' AS timeframe, COUNT(*) AS orderamt
+ FROM orders
+   WHERE orders.time BETWEEN '09:00:00' AND '13:59:59' 
+UNION
+   SELECT '2pm-6:59pm' AS timeframe, COUNT(*) AS orderamt
+     FROM orders
+       WHERE orders.time BETWEEN '14:00:00' AND '18:59:59'
+UNION
+   SELECT '7pm-11:59pm' AS timeframe, COUNT(*) AS orderamt
+     FROM orders
+       WHERE orders.time BETWEEN '19:00:00' AND '23:59:59';
 
 ---THIS SHOWS THAT THE SHIFT FROM 2PM-6:59PM HAS THE MOST ORDERS. THIS IS WHEN MORE EMPLOYEES
 SHOULD BE SCHEDULED---
@@ -167,10 +180,12 @@ SHOULD BE SCHEDULED---
 
 13---SHOW DATE WITH MOST AMOUNT OF ORDERS, SHOW SALES ALONG WITH IT---
 
-select count(distinct orders.order_id) as amt_orders, date, 
-round(sum(pizzas.price),2) as sales
- from orders
-join order_details od on od.order_id = orders.order_id
-join pizzas on od.pizza_id = pizzas.pizza_id
-group by date
-order by amt_orders desc;
+SELECT COUNT(DISTINCT orders.order_id) AS amt_orders, date, 
+  ROUND(SUM(pizzas.price),2) AS sales
+   FROM orders
+    JOIN order_details od 
+     ON od.order_id = orders.order_id
+    JOIN pizzas 
+   ON od.pizza_id = pizzas.pizza_id
+ GROUP BY date
+ORDER BY amt_orders DESC;
